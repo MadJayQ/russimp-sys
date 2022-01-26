@@ -19,5 +19,8 @@ Alternatively provide a VCPKG_ROOT environment variable pointed at the location 
 
 ## Changelog
 
+### 1.1.0
+* Build based on assimp release 5.2.0
+
 ### 1.0.0
-* Builds based on 5.1.0 release
+* Build based on assimp release 5.1.0
