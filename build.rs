@@ -9,13 +9,18 @@ const WRAPPER_FILE: &str = "wrapper.h";
 fn main() {
     let (include, libdir, libname) = assimp_lib_data();
 
+    
     if cfg!(target_os = "windows") {
         let result = std::process::Command::new("cargo")
-            .arg("vcpkg")
-            .arg("build")
-            .output()
-            .unwrap();
+        .arg("vcpkg")
+        .arg("build")
+        .output()
+        .unwrap();
     }
+    std::env::set_var("REBUILD", format!("{:?}", std::time::Instant::now()));
+    println!("cargo:rerun-if-env-changed=REBUILD");
+    println!("{:?} {:?} {:?}", include, libdir, libname);
+    // panic!();
 
     let mut builder = bindgen::Builder::default()
         .clang_arg(format!("-I{}", include))
@@ -47,7 +52,20 @@ fn main() {
 
 fn assimp_lib_data() -> (String, String, String) {
     let target = std::env::var("TARGET").unwrap();
+    let assimp_dir = std::env::var("ASSIMP_DIR");
     let vcpkg_root = std::env::var("VCPKG_ROOT").unwrap_or("target/vcpkg".to_string());
+
+    if let Ok(assimp_dir) = assimp_dir {
+        let install_dir = PathBuf::from(assimp_dir);
+        let include = install_dir.join("include").to_str().unwrap().to_owned();
+        let lib = install_dir.join("lib\\Debug").to_str().unwrap().to_owned();
+        let name = String::from("assimp-vc142-mtd");
+        return (
+            include,
+            lib,
+            name
+        );
+    }
 
     let include_path = if target.contains("apple") {
         "/opt/homebrew/opt/assimp/include"
